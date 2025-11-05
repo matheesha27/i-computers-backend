@@ -31,6 +31,7 @@ export function createUser(req, res) {
 export function loginUser(req, res) {
     const email = req.body.email
     const password = req.body.password
+    console.log("Request to login: " + email + ", " + password)
 
     User.find({email: email}).then(
         (users) => {
@@ -41,6 +42,7 @@ export function loginUser(req, res) {
                 })
             } else {
                 const user = users[0]
+                // console.log(email, password)
 
                 // if (user.invalidTries >= 3) {
                 //     res.json(
@@ -65,11 +67,12 @@ export function loginUser(req, res) {
                     }
 
                     // Generate JWT token
-                    const jwtToken = jwt.sign(payload, "secretKey96#5", {expiresIn: "24h"})
+                    const jwtToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {expiresIn: "24h"})
 
                     res.json({
                         message: "Login Successful",
-                        token: jwtToken
+                        token: jwtToken,
+                        role: user.role
                     })
                 } else {
                     // User.updateOne({email: email}, {

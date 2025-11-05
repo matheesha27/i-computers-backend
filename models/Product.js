@@ -35,6 +35,11 @@ const productSchema = new mongoose.Schema(
             type: String,
             required: true
         },
+        model: {
+            type: String,
+            required: true,
+            default: "Standard"
+        },
         brand: {
             type: String,
             required: true,
@@ -47,7 +52,7 @@ const productSchema = new mongoose.Schema(
         },
         isAvailable: {
             type: Boolean,
-            default: true
+            default: false
         }
     }
 )
