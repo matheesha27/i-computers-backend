@@ -71,7 +71,8 @@ export async function createOrder(req, res) {
                 name: name,
                 address: req.body.address,
                 total: total,
-                items: items
+                items: items,
+                phone: req.body.phone
             }
         )
         await newOrder.save();

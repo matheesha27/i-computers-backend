@@ -33,6 +33,10 @@ const orderSchema = new mongoose.Schema(
             required: true,
             default: "pending"
         },
+        phone: {
+            type: String,
+            required: false
+        },
         notes: {
             type: String,
             required: false
