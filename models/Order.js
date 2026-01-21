@@ -31,7 +31,7 @@ const orderSchema = new mongoose.Schema(
         status: {
             type: String,
             required: true,
-            default: "pending"
+            default: "Pending"
         },
         phone: {
             type: String,
