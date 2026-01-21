@@ -16,6 +16,7 @@ export function createProduct(req, res) {
             res.json({
                 message: "Product created successfully"
             })
+            console.log("Created product")
         }
     ).catch(
         (error) => {
@@ -29,11 +30,10 @@ export function createProduct(req, res) {
 
 export function isAdmin(req) {
 
-    // check whether user role is admin
+    
     if (req.user == null) {
         return false
     }
-    // the below req.user is appended by the index.js
     if (req.user.role != "admin") {
         return false
     }
@@ -59,17 +59,23 @@ export async function getAllProducts(req, res) {
         //     }
         // )
 
-        const products = await Product.find()
+        const products = await Product.find().then(
+            (products) => {
+                res.json(products)
+                console.log("Received a get products call")
+                console.log(products)
+            }
+        )
         
         } else {
-            Product.find({isAvailable: true}).then(
+            Product.find().then(
                 (products) => {
                     res.json(products)
                 }
             ).catch(
                 (error) => {
                     res.status(500).json({
-                        message: "Error fetching available products",
+                        message: "Error fetching products",
                         error: error.message
                     })
                 }
