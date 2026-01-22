@@ -112,3 +112,24 @@ export async function getOrders(req, res) {
         res.json(orders)
     }
 }
+
+export async function updateOrderStatus(req, res) {
+    
+    if (!isAdmin(req)) {
+        res.status(403).json({
+            message: "Only admins can update products"
+        })
+        return
+    }
+    
+    const orderId = req.params.orderId
+    console.log("OrderID: " + orderId)
+
+    Order.updateOne({orderId: orderId}, req.body).then(
+        () => {
+            res.status(201).json({
+                message: "Order status updated successfully"
+            })
+        }
+    )
+}
