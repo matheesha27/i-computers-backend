@@ -123,7 +123,6 @@ export async function updateOrderStatus(req, res) {
     }
     
     const orderId = req.params.orderId
-    console.log("OrderID: " + orderId)
 
     Order.updateOne({orderId: orderId}, req.body).then(
         () => {

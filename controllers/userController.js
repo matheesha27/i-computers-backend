@@ -35,14 +35,12 @@ export function loginUser(req, res) {
 
     User.find({email: email}).then(
         (users) => {
-            // console.log(users)
             if(users[0] == null) {
                 res.status(404).json({
                     message: "User Not Found"
                 })
             } else {
                 const user = users[0]
-                // console.log(email, password)
 
                 // if (user.invalidTries >= 3) {
                 //     res.json(
@@ -90,4 +88,16 @@ export function loginUser(req, res) {
             }
         }
     )
+}
+
+export function getUser(req, res) {
+
+    if(req.user == null) {
+        res.status(404).json({
+            message: "Unauthorized"
+        })
+        return
+    }
+
+    res.json(req.user);
 }

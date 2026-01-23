@@ -33,7 +33,6 @@ app.use(
 
         if (authorizationHeader != null) {
             const token = authorizationHeader.replace("Bearer ", "")
-            // console.log(token)
 
             // Decrypt token - jwt.verify(token, secretKey, errorFunction)
             jwt.verify(token, jwtSecretKey,
@@ -44,7 +43,6 @@ app.use(
                             message: "Invalid token"
                         })
                     } else {
-                        // console.log(content)
                         // this content has the role as admin or customer
                         req.user = content
                         next()

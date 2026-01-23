@@ -62,7 +62,6 @@ export async function getAllProducts(req, res) {
         const products = await Product.find().then(
             (products) => {
                 res.json(products)
-                console.log("Received a get products call")
                 console.log(products)
             }
         )
