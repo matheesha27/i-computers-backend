@@ -9,11 +9,7 @@ export function createUser(req, res) {
 
     // hashing - 10 times hashing (salting rounds)
     const hashedPassword = bcrypt.hashSync(data.password, 10)
-    // res.json({
-    //     message: "Hashed Password: " + hashedPassword
-    // })
     
-    // const user = new User(data)
     const user = new User(
         {
             firstName: data.firstName,
@@ -123,12 +119,12 @@ export async function googleLogin(req, res) {
             await newUser.save();
             console.log("Created a new user")
             const payload = {
-                email: user.email,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                role: user.role,
+                email: newUser.email,
+                firstName: newUser.firstName,
+                lastName: newUser.lastName,
+                role: newUser.role,
                 isEmailVerified: true,
-                image: user.image
+                image: newUser.image
             }
             const jwtToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {expiresIn: "24h"})
             res.json({
