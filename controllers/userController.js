@@ -4,7 +4,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
-import otp from "../models/Otp.js";
+import Otp from "../models/Otp.js";
+import { text } from "express";
 
 dotenv.config();
 
@@ -144,6 +145,7 @@ export async function googleLogin(req, res) {
                 isEmailVerified: true,
                 image: newUser.image
             }
+            // Generate JWT token
             const jwtToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {expiresIn: "24h"})
             res.json({
                 message: "Login Successful",
@@ -160,7 +162,7 @@ export async function googleLogin(req, res) {
                 isEmailVerified: user.isEmailVerified,
                 image: user.image
             }
-            // Generate JWT token
+            // Get the jwt token from the user data to check with the database
             const jwtToken = jwt.sign(payload, process.env.JWT_SECRET_KEY, {expiresIn: "24h"})
             res.json({
                 message: "Login Successful",
@@ -178,44 +180,102 @@ export async function googleLogin(req, res) {
 
 export async function sendOTP(req, res) {
     
-    const email = req.params.email
-    const user = await User.findOne(
-        {
-            email: email
-        });
-    if (user == null) {
-        res.status(404).json(
+    try {
+        const email = req.params.email
+        const user = await User.findOne(
             {
-                message: "User not found"
+                email: email
+            });
+        if (user == null) {
+            res.status(404).json(
+                {
+                    message: "User not found"
+                }
+            )
+            return
+        }
+        await Otp.deleteMany(
+            {
+                email: email
             }
         )
-        return
-    }
 
-    await otp.deleteMany(
-        {
-            email: email
-        }
-    )
+        // Generate a 6 digit OTPs
+        const otpCode = Math.floor(100000 + Math.random()*900000).toString()
+        const newOtp = new Otp(
+            {
+                email: email,
+                otp: otpCode
+            }
+        )
+        // Save OTP in the database
+        await newOtp.save();
 
-    const message = {
-        from: "matheesha27@gmail.com",
-        to: email,
-        subject: "Your OTP is 123456"
-    }
-    transporter.sendMail(message, (err, info) => {
-        if (err) {
-            res.status(500).json(
-                {
-                    message: "Failed to send OTP"
-                }
-            )
-        } else {
-            res.json(
-                {
-                    message: "OTP sent successfully"
-                }
-            )
+        const message = {
+            from: "matheesha27@gmail.com",
+            to: email,
+            subject: "Your OTP",
+            text: "Your OTP is " + otpCode
         }
-    });
+        transporter.sendMail(message, (err, info) => {
+            if (err) {
+                res.status(500).json(
+                    {
+                        message: "Failed to send OTP"
+                    }
+                )
+            } else {
+                res.json(
+                    {
+                        message: "OTP sent successfully"
+                    }
+                )
+            }
+        });
+    } catch(error) {
+        res.status(500).json(
+            {
+                message: "Failed to send OTP",
+                error: error.message
+            }
+        )
+    }
+}
+
+export async function validateOtpAndUpdatePassword(req, res) {
+
+    try {
+        const otp = req.body.otp
+        const newPassword = req.body.newPassword
+        const email = req.body.email
+
+        const otpRecord = await Otp.findOne({email: email, otp: otp});
+        if (otpRecord == null) {
+            res.status(400).json(
+                {
+                    message: "Invalid OTP"
+                }
+            );
+            return
+        }
+
+        await Otp.deleteMany({email: email});
+
+        const hashedPassword = bcrypt.hashSync(newPassword, 10);
+        await User.updateOne(
+            {email: email},
+            {$set: {password: hashedPassword, isEmailVerified: true}}    
+        );
+        res.status(201).json(
+            {
+                message: "Password updated successfully"
+            }
+        )
+    } catch(error) {
+        res.status(500).json(
+            {
+                message: "Failed to update password"
+            }
+        )
+    }
 }
