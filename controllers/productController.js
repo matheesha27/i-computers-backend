@@ -30,7 +30,7 @@ export function createProduct(req, res) {
 
 export function isAdmin(req) {
 
-    
+
     if (req.user == null) {
         return false
     }
@@ -46,26 +46,13 @@ export async function getAllProducts(req, res) {
     // send only available products IF user role is NOT admi (customer)
     try {
         if (isAdmin(req)) {
-        // Product.find().then(
-        //     (products) => {
-        //         res.json(products)
-        //     }
-        // ).catch(
-        //     (error) => {
-        //         res.json({
-        //             message: "Error fetching products",
-        //             error: error.message
-        //         })
-        //     }
-        // )
+            const products = await Product.find().then(
+                (products) => {
+                    res.json(products)
+                    console.log(products)
+                }
+            )
 
-        const products = await Product.find().then(
-            (products) => {
-                res.json(products)
-                console.log(products)
-            }
-        )
-        
         } else {
             Product.find().then(
                 (products) => {
@@ -80,7 +67,7 @@ export async function getAllProducts(req, res) {
                 }
             )
         }
-    } catch(error) {
+    } catch (error) {
         res.status(500).json({
             message: "Error fetching products"
         }
@@ -89,17 +76,17 @@ export async function getAllProducts(req, res) {
 }
 
 export function updateProduct(req, res) {
-    
+
     if (!isAdmin(req)) {
         res.status(403).json({
             message: "Only admins can update products"
         })
         return
     }
-    
+
     const productId = req.params.productId
 
-    Product.updateOne({productId: productId}, req.body).then(
+    Product.updateOne({ productId: productId }, req.body).then(
         () => {
             res.json({
                 message: "Product updated successfully"
@@ -110,14 +97,14 @@ export function updateProduct(req, res) {
 
 export function deleteProduct(req, res) {
 
-    if (!isAdmin(req)){
+    if (!isAdmin(req)) {
         res.status(403).json({
             message: "Only admins can delete products"
         })
     }
     const productId = req.params.productId
 
-    Product.deleteOne({productId: productId}).then(
+    Product.deleteOne({ productId: productId }).then(
         () => {
             res.json({
                 message: "Product deleted successfully"
@@ -130,7 +117,7 @@ export function getProductById(req, res) {
 
     const productId = req.params.productId
 
-    Product.findOne({productId: productId}).then(
+    Product.findOne({ productId: productId }).then(
         (product) => {
             if (product == null) {
                 res.status(404).json({
@@ -148,7 +135,7 @@ export function getProductById(req, res) {
                         })
                     }
                 }
-                
+
             }
         }
     ).catch(
@@ -160,4 +147,30 @@ export function getProductById(req, res) {
             )
         }
     )
+}
+
+export async function searchProducts(req, res) {
+
+    const query = req.params.query
+
+    try {
+        const products = await Product.find(
+            {
+                $or: [
+                    {name: { $regex: query, $options: "i" }},
+                    {alternativeNames: { $elemMatch: { $regex: query, $options: "i" } }},
+                ],
+                isAvailable: true
+            }
+        );
+        return res.json(products);
+
+    } catch (error) {
+        res.status(500).json(
+            {
+                message: "Error searching products",
+                error: error.message
+            }
+        )
+    }
 }
