@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import nodemailer from "nodemailer";
 import Otp from "../models/Otp.js";
 import { text } from "express";
+import { isAdmin } from "./productController.js";
 
 dotenv.config();
 
@@ -277,5 +278,29 @@ export async function validateOtpAndUpdatePassword(req, res) {
                 message: "Failed to update password"
             }
         )
+    }
+}
+
+export async function getAllUsers(req, res) {
+    
+    if (!isAdmin(req)) {
+        res.status(401).json(
+            {
+                message: "Unauthorized"
+            }
+        );
+        return
+    }
+
+    try {
+        const users = await User.find();
+        res.json(users);
+    } catch(error) {
+        res.status(500).json(
+            {
+                message: "Error fetching users",
+                error: error.message
+            }
+        );
     }
 }
