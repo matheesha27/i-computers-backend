@@ -7,6 +7,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import orderRouter from "./routes/orderRouter.js";
 import supportRouter from "./routes/supportRouter.js";
+import reviewRouter from "./routes/reviewRouter.js";
 
 dotenv.config()
 
@@ -67,3 +68,4 @@ app.use("/api/user", userRouter)
 app.use("/api/products", productRouter)
 app.use("/api/orders", orderRouter)
 app.use("/api/support", supportRouter)
+app.use("/api/review", reviewRouter)
